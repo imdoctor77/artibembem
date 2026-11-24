@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1a2d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="format-detection" content="telephone=no" />
+
+  <title>Петросян Артур — Веб-разработка и NFC-визитки</title>
+  <meta name="description" content="Петросян Артур — разработка сайтов и NFC-визиток под ключ. Краснодар и удалённо по всей России." />
+
+  <!-- Open Graph для красивого превью в Telegram и WhatsApp -->
+  <meta property="og:type" content="profile" />
+  <meta property="og:locale" content="ru_RU" />
+  <meta property="og:title" content="Петросян Артур — Веб-разработка и NFC-визитки" />
+  <meta property="og:description" content="Мобильные сайты, лендинги и физические NFC-карты под ключ. Запуск от 1 дня." />
+  <meta property="og:image" content="photo.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <style>
+    @font-face {
+      font-family: "Golos Text";
+      src: url("fonts/GolosText-VF.woff2") format("woff2-variations"),
+           url("fonts/GolosText-VF.woff2") format("woff2");
+      font-weight: 400 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      /* Палитра: бордовый #490b1a · тёмно-синий #142841 · серо-голубой #798da6 · кремовый #ffefd3 */
+      --wine: #490b1a;
+      --navy: #142841;
+      --steel: #798da6;
+      --cream: #ffefd3;
+
+      --bg: #0b1a2d;
+      --card-bg: #142841;
+      --subcard-bg: rgba(255, 239, 211, 0.035);
+      --subcard-bg-hover: rgba(255, 239, 211, 0.07);
+      --border: rgba(121, 141, 166, 0.22);
+      --border-strong: rgba(121, 141, 166, 0.4);
+
+      --text: #ffefd3;
+      --text-secondary: #aebcce;
+      --text-muted: #8195ae;
+
+      /* Акцент: кремовый, поверх него бордовый текст; серо-голубой как поддержка */
+      --accent: #ffefd3;
+      --accent-deep: #798da6;
+      --accent-bright: #ffefd3;
+      --accent-text-on: #490b1a;
+      --accent-border: rgba(255, 239, 211, 0.36);
+
+      --steel-light: #a3b4c9;
+
+      --r-card: 28px;
+      --r-photo: 22px;
+      --r-inner: 18px;
+      --r-btn: 16px;
+      --r-pill: 999px;
+
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+      --font: "Golos Text", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(73, 11, 26, 0.95), transparent 56%),
+        radial-gradient(circle at 85% 24%, rgba(121, 141, 166, 0.12), transparent 42%),
+        var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.48;
+      overflow-x: hidden;
+      padding: calc(16px + env(safe-area-inset-top)) 14px calc(36px + env(safe-area-inset-bottom));
+    }
+
+    @media (min-width: 520px) {
+      body {
+        padding: 28px 20px 52px;
+      }
+    }
+
+    button, a {
+      touch-action: manipulation;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Узкий мобильный стек карточек */
+    .stack {
+      width: 100%;
+      max-width: 452px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Верхняя капсула-индикатор */
+    .top-domain-pill {
+      align-self: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 16px;
+      border-radius: var(--r-pill);
+      background: rgba(255, 239, 211, 0.04);
+      border: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255, 239, 211, 0.85);
+      letter-spacing: -0.01em;
+      text-decoration: none;
+    }
+
+    /* ======================================================
+       МОДУЛЬНАЯ КАРТОЧКА СЕКЦИИ
+       ====================================================== */
+    .card {
+      position: relative;
+      background: linear-gradient(165deg, #18304d 0%, #142841 55%, #102239 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--r-card);
+      padding: 22px 18px 20px;
+      overflow: hidden;
+      isolation: isolate;
+      box-shadow: inset 0 1px 0 rgba(255, 239, 211, 0.06);
+    }
+
+    @media (min-width: 420px) {
+      .card {
+        padding: 24px 20px 22px;
+      }
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: -64px;
+      right: -56px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(73, 11, 26, 0.8) 0%, rgba(121, 141, 166, 0.07) 48%, transparent 72%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .card--hero::before {
+      top: -80px;
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      width: 310px;
+      height: 210px;
+      background: radial-gradient(circle, rgba(73, 11, 26, 0.9) 0%, rgba(121, 141, 166, 0.09) 46%, transparent 72%);
+    }
+
+    /* Верхний бейдж-пилюля с кремовой точкой */
+    .eyebrow-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border-radius: var(--r-pill);
+      background: rgba(255, 239, 211, 0.045);
+      border: 1px solid rgba(121, 141, 166, 0.3);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255, 239, 211, 0.9);
+      margin-bottom: 18px;
+    }
+
+    .accent-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(255, 239, 211, 0.7);
+      flex-shrink: 0;
+    }
+
+    /* Плотный массивный заголовок: кремовый -> серо-голубой */
+    .gradient-title {
+      font-size: clamp(32px, 9.6vw, 42px);
+      font-weight: 800;
+      line-height: 0.96;
+      letter-spacing: -0.04em;
+      background: linear-gradient(155deg, #fff8ea 16%, #ffefd3 52%, #b4c3d6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 20px;
+    }
+
+    .gradient-title--section {
+      font-size: clamp(28px, 8.2vw, 36px);
+      line-height: 1.02;
+      margin-bottom: 14px;
+    }
+
+    .section-lead {
+      font-size: 14.5px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      margin-bottom: 18px;
+    }
+
+    /* ======================================================
+       HERO VISUAL (фото ИЛИ монограмма, если photo.jpg нет)
+       ====================================================== */
+    .portrait-wrap {
+      position: relative;
+      width: 100%;
+      border-radius: var(--r-photo);
+      overflow: hidden;
+      background: #0e1d33;
+      border: 1px solid var(--border-strong);
+      margin-bottom: 14px;
+    }
+
+    .portrait-img-box {
+      width: 100%;
+      min-height: 330px;
+      max-height: 460px;
+      background:
+        radial-gradient(circle at 50% 28%, rgba(73, 11, 26, 0.9) 0%, transparent 62%),
+        linear-gradient(160deg, #1a3150 0%, #0e1d33 82%);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 84px;
+      position: relative;
+    }
+
+    .portrait-photo {
+      width: 100%;
+      height: auto;
+      max-height: 390px;
+      object-fit: contain;
+      object-position: center top;
+      display: block;
+    }
+
+    /* Стильный fallback, если photo.jpg не загружен */
+    .monogram-fallback {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 46px 20px 104px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .portrait-wrap.no-photo .portrait-photo {
+      display: none;
+    }
+
+    .portrait-wrap.no-photo .portrait-img-box {
+      min-height: 270px;
+      align-items: center;
+      padding-bottom: 0;
+    }
+
+    .portrait-wrap.no-photo .monogram-fallback {
+      display: flex;
+    }
+
+    .monogram-badge {
+      width: 84px;
+      height: 84px;
+      border-radius: 24px;
+      background: linear-gradient(145deg, #490b1a, #142841);
+      border: 1px solid var(--accent-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--accent-bright);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .monogram-tag {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--steel-light);
+    }
+
+    .portrait-glass-card {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      padding: 15px 16px;
+      border-radius: 18px;
+      background: rgba(11, 26, 45, 0.8);
+      backdrop-filter: saturate(160%) blur(18px);
+      -webkit-backdrop-filter: saturate(160%) blur(18px);
+      border: 1px solid rgba(121, 141, 166, 0.3);
+    }
+
+    .portrait-role {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--cream);
+      margin-bottom: 5px;
+      letter-spacing: -0.015em;
+    }
+
+    .portrait-sub {
+      font-size: 13.5px;
+      line-height: 1.42;
+      color: var(--text-secondary);
+    }
+
+    /* ======================================================
+       2 ПЛИТКИ ФАКТОВ
+       ====================================================== */
+    .facts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .fact-box {
+      background: var(--subcard-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-inner);
+      padding: 14px 15px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .fact-label {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.2;
+    }
+
+    .fact-value {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.26;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    /* ======================================================
+       ГЛАВНЫЕ КНОПКИ
+       ====================================================== */
+    .btn-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn {
+      width: 100%;
+      min-height: 54px;
+      padding: 14px 20px;
+      border-radius: var(--r-btn);
+      font-family: var(--font);
+      font-size: 15.5px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.16s var(--ease), filter 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn--primary {
+      background: linear-gradient(95deg, #fff8ea 0%, #ffefd3 55%, #e9d4b0 100%);
+      color: var(--accent-text-on);
+      box-shadow: 0 10px 26px rgba(73, 11, 26, 0.55), inset 0 1px 0 rgba(255, 239, 211, 0.6);
+    }
+
+    @media (hover: hover) {
+      .btn--primary:hover {
+        filter: brightness(1.05);
+      }
+    }
+
+    .btn--secondary {
+      background: linear-gradient(180deg, #1d3858 0%, #142841 100%);
+      color: var(--cream);
+      border: 1px solid rgba(121, 141, 166, 0.3);
+      box-shadow: inset 0 1px 0 rgba(255, 239, 211, 0.06);
+    }
+
+    @media (hover: hover) {
+      .btn--secondary:hover {
+        border-color: var(--accent-border);
+        background: linear-gradient(180deg, #234268 0%, #19304f 100%);
+      }
+    }
+
+    /* ======================================================
+       ВЛОЖЕННАЯ КАРТОЧКА С ЖИВЫМ ТЕЗИСОМ
+       ====================================================== */
+    .subcard {
+      background: var(--subcard-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-inner);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .subcard-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .subcard-kicker .accent-dot {
+      width: 6px;
+      height: 6px;
+    }
+
+    .typewriter-line {
+      min-height: 48px;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.32;
+      color: var(--cream);
+      letter-spacing: -0.015em;
+    }
+
+    .caret {
+      display: inline-block;
+      width: 2px;
+      height: 1.05em;
+      background: var(--accent);
+      vertical-align: -0.15em;
+      margin-left: 3px;
+      animation: blink 0.9s steps(1) infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      50.01%, 100% { opacity: 0; }
+    }
+
+    /* ======================================================
+       СХЕМА «ДО → ПОСЛЕ»
+       ====================================================== */
+    .compare-box {
+      background: rgba(8, 18, 32, 0.62);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .compare-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .compare-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .compare-switch {
+      display: inline-flex;
+      background: rgba(255, 239, 211, 0.05);
+      border: 1px solid var(--border);
+      border-radius: var(--r-pill);
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .switch-btn {
+      background: transparent;
+      border: none;
+      border-radius: var(--r-pill);
+      padding: 5px 12px;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .switch-btn.active {
+      background: var(--accent);
+      color: var(--accent-text-on);
+    }
+
+    /* Визуальная шкала конверсии / скорости контакта */
+    .balance-viz {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      align-items: end;
+      gap: 8px;
+      height: 58px;
+      padding: 8px 4px 10px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(121, 141, 166, 0.3);
+    }
+
+    .viz-bar {
+      width: 100%;
+      border-radius: 6px;
+      transition: height 0.55s var(--ease), background 0.45s ease, box-shadow 0.45s ease;
+    }
+
+    /* Состояние «До»: бумажные визитки и пустые ссылки */
+    .compare-box[data-state="before"] .viz-bar:nth-child(1) { height: 22%; background: rgba(255, 239, 211, 0.16); }
+    .compare-box[data-state="before"] .viz-bar:nth-child(2) { height: 34%; background: rgba(121, 141, 166, 0.42); }
+    .compare-box[data-state="before"] .viz-bar:nth-child(3) { height: 18%; background: rgba(255, 239, 211, 0.14); }
+    .compare-box[data-state="before"] .viz-bar:nth-child(4) { height: 28%; background: rgba(121, 141, 166, 0.34); }
+    .compare-box[data-state="before"] .viz-bar:nth-child(5) { height: 15%; background: rgba(255, 239, 211, 0.14); }
+
+    /* Состояние «После»: рост доверия и заявок в 1 касание */
+    .compare-box[data-state="after"] .viz-bar:nth-child(1) { height: 48%; background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep)); }
+    .compare-box[data-state="after"] .viz-bar:nth-child(2) { height: 62%; background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep)); }
+    .compare-box[data-state="after"] .viz-bar:nth-child(3) { height: 74%; background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep)); }
+    .compare-box[data-state="after"] .viz-bar:nth-child(4) { height: 86%; background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep)); }
+    .compare-box[data-state="after"] .viz-bar:nth-child(5) { height: 96%; background: linear-gradient(180deg, var(--accent-bright), var(--accent-deep)); box-shadow: 0 0 16px rgba(255, 239, 211, 0.3); }
+
+    .compare-caption {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .compare-status {
+      font-weight: 700;
+      color: var(--cream);
+    }
+
+    .compare-box[data-state="after"] .compare-status {
+      color: var(--accent-bright);
+    }
+
+    .compare-hint {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      line-height: 1.42;
+    }
+
+    /* ======================================================
+       ТАБЫ УСЛУГ + ЧИПЫ
+       ====================================================== */
+    .tabs-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .tab-btn {
+      flex: 1 1 auto;
+      min-height: 38px;
+      padding: 8px 13px;
+      border-radius: 12px;
+      background: var(--subcard-bg);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--wine);
+      border-color: var(--accent-border);
+      color: var(--accent-bright);
+    }
+
+    .tab-panel {
+      background: var(--subcard-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-inner);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .tab-panel h3 {
+      font-size: 16.5px;
+      font-weight: 700;
+      color: var(--cream);
+      margin-bottom: 7px;
+      letter-spacing: -0.015em;
+    }
+
+    .tab-panel p {
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+
+    .chips-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .method-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 13px;
+      background: rgba(255, 239, 211, 0.025);
+      border: 1px solid var(--border);
+      font-size: 12.5px;
+      font-weight: 500;
+      color: rgba(255, 239, 211, 0.88);
+      line-height: 1.25;
+    }
+
+    .chip-glyph {
+      color: var(--steel-light);
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    /* ======================================================
+       КЕЙСЫ / ПОРТФОЛИО
+       ====================================================== */
+    .cases-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .case-card {
+      background: var(--subcard-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-inner);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.18s ease, background-color 0.18s ease;
+    }
+
+    @media (hover: hover) {
+      a.case-card:hover {
+        border-color: var(--accent-border);
+        background: var(--subcard-bg-hover);
+      }
+    }
+
+    .case-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .case-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--r-pill);
+      background: var(--wine);
+      border: 1px solid var(--accent-border);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--cream);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .case-link-arrow {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--accent-bright);
+    }
+
+    .case-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--cream);
+      line-height: 1.3;
+    }
+
+    .case-desc {
+      font-size: 13.5px;
+      line-height: 1.46;
+      color: var(--text-secondary);
+    }
+
+    /* ======================================================
+       FAQ АККОРДЕОН
+       ====================================================== */
+    .faq-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .faq-item {
+      background: var(--subcard-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-inner);
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .faq-item.open {
+      border-color: var(--accent-border);
+      background: rgba(73, 11, 26, 0.5);
+    }
+
+    .faq-btn {
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      text-align: left;
+      cursor: pointer;
+      font-family: var(--font);
+    }
+
+    .faq-q {
+      font-size: 14.5px;
+      font-weight: 600;
+      line-height: 1.38;
+      color: var(--cream);
+    }
+
+    .faq-plus {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255, 239, 211, 0.06);
+      position: relative;
+      flex-shrink: 0;
+      color: var(--text-secondary);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .faq-plus::before,
+    .faq-plus::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 1.5px;
+      background: currentColor;
+      transform: translate(-50%, -50%);
+      transition: transform 0.25s var(--ease);
+    }
+
+    .faq-plus::after {
+      transform: translate(-50%, -50%) rotate(90deg);
+    }
+
+    .faq-item.open .faq-plus {
+      background: var(--wine);
+      color: var(--accent-bright);
+    }
+
+    .faq-item.open .faq-plus::after {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    .faq-panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.3s var(--ease);
+    }
+
+    .faq-item.open .faq-panel {
+      grid-template-rows: 1fr;
+    }
+
+    .faq-inner {
+      overflow: hidden;
+    }
+
+    .faq-body {
+      padding: 0 16px 16px;
+      font-size: 13.5px;
+      line-height: 1.52;
+      color: var(--text-secondary);
+    }
+
+    /* ======================================================
+       КОНТАКТЫ
+       ====================================================== */
+    .contact-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .contact-row {
+      width: 100%;
+      background: var(--subcard-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--r-inner);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      text-decoration: none;
+      color: var(--text);
+      font-family: var(--font);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 0.18s ease, background-color 0.18s ease;
+    }
+
+    .contact-row.static {
+      cursor: default;
+    }
+
+    @media (hover: hover) {
+      .contact-row:not(.static):hover {
+        border-color: var(--accent-border);
+        background: var(--subcard-bg-hover);
+      }
+    }
+
+    .contact-glyph {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--wine);
+      border: 1px solid rgba(255, 239, 211, 0.24);
+      color: var(--accent-bright);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    .contact-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .contact-kicker {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .contact-val {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--cream);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .contact-action {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-bright);
+      flex-shrink: 0;
+    }
+
+    /* ======================================================
+       МИНИМАЛИСТИЧНЫЙ ФУТЕР
+       ====================================================== */
+    .footer-note {
+      padding: 8px 12px 4px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .footer-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255, 239, 211, 0.72);
+    }
+
+    .footer-disclaimer {
+      font-size: 11.5px;
+      line-height: 1.48;
+      color: var(--text-muted);
+    }
+
+    /* ======================================================
+       МОДАЛЬНАЯ ШТОРКА «ОБСУДИТЬ ПРОЕКТ»
+       ====================================================== */
+    .sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: rgba(5, 12, 22, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .sheet-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sheet {
+      width: 100%;
+      max-width: 452px;
+      background: linear-gradient(175deg, #18304d 0%, #0f2038 100%);
+      border-top: 1px solid var(--accent-border);
+      border-radius: 26px 26px 0 0;
+      padding: 14px 20px calc(24px + env(safe-area-inset-bottom));
+      transform: translateY(100%);
+      transition: transform 0.32s var(--ease);
+    }
+
+    .sheet-backdrop.open .sheet {
+      transform: translateY(0);
+    }
+
+    .sheet-handle {
+      width: 38px;
+      height: 4px;
+      border-radius: var(--r-pill);
+      background: rgba(255, 239, 211, 0.18);
+      margin: 0 auto 16px;
+    }
+
+    .sheet-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .sheet-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--cream);
+    }
+
+    .sheet-close {
+      background: rgba(255, 239, 211, 0.08);
+      border: 1px solid var(--border);
+      border-radius: var(--r-pill);
+      padding: 6px 12px;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(26px + env(safe-area-inset-bottom));
+      transform: translate(-50%, 12px);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 100;
+      background: var(--wine);
+      color: var(--accent-bright);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--r-pill);
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
+      white-space: nowrap;
+      transition: opacity 0.2s ease, transform 0.24s var(--ease);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="stack" id="top">
+    <a href="#top" class="top-domain-pill">
+      <span class="accent-dot" aria-hidden="true"></span>
+      <span>Web &amp; NFC · Краснодар / РФ</span>
+    </a>
+
+    <!-- ======================================================
+         КАРТОЧКА 1: HERO
+         ====================================================== -->
+    <section class="card card--hero" aria-label="Визитка разработчика">
+      <div class="eyebrow-pill">
+        <span class="accent-dot" aria-hidden="true"></span>
+        <span>Сайты и NFC-карты</span>
+      </div>
+
+      <h1 class="gradient-title">
+        Петросян<br />Артур
+      </h1>
+
+      <!-- Если положишь photo.jpg в папку, откроется фото; если нет — аккуратная монограмма ПА -->
+      <div class="portrait-wrap" id="portraitWrap">
+        <div class="portrait-img-box">
+          <img
+            src="photo.jpg"
+            alt="Петросян Артур"
+            class="portrait-photo"
+            onerror="document.getElementById('portraitWrap').classList.add('no-photo')"
+          />
+          <div class="monogram-fallback" aria-hidden="true">
+            <div class="monogram-badge">ПА</div>
+            <span class="monogram-tag">Digital &amp; NFC Studio</span>
+          </div>
+        </div>
+        <div class="portrait-glass-card">
+          <div class="portrait-role">Веб-разработка и NFC-визитки</div>
+          <p class="portrait-sub">
+            Создаю быстрые мобильные сайты, лендинги и физические NFC-карты под ключ для врачей, экспертов и бизнеса
+          </p>
+        </div>
+      </div>
+
+      <div class="facts-grid">
+        <div class="fact-box">
+          <span class="fact-label">Срок запуска</span>
+          <span class="fact-value">Готовый прототип за 1–2 дня</span>
+        </div>
+        <div class="fact-box">
+          <span class="fact-label">Формат работы</span>
+          <span class="fact-value">Сайт + настроенная NFC-карта</span>
+        </div>
+      </div>
+
+      <div class="btn-stack">
+        <a href="contact.vcf" class="btn btn--primary">Добавить в контакты</a>
+        <button type="button" class="btn btn--secondary" id="openSheetHeroBtn">Обсудить проект</button>
+      </div>
+    </section>
+
+    <!-- ======================================================
+         КАРТОЧКА 2: КАК ЭТО РАБОТАЕТ
+         ====================================================== -->
+    <section class="card" id="approach" aria-labelledby="approach-title">
+      <div class="eyebrow-pill">
+        <span class="accent-dot" aria-hidden="true"></span>
+        <span>Подход</span>
+      </div>
+
+      <h2 class="gradient-title gradient-title--section" id="approach-title">
+        Сайт и карта<br />под ключ
+      </h2>
+
+      <div class="subcard">
+        <div class="subcard-kicker">
+          <span class="accent-dot" aria-hidden="true"></span>
+          <span>Что получает клиент</span>
+        </div>
+        <div class="typewriter-line" aria-live="off">
+          <span id="typewriterText">Контакт в телефон за 1 касание</span><span class="caret" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <p class="section-lead">
+        Никаких тяжёлых конструкторов с абонентской платой. Чистый код с мгновенной загрузкой на iPhone и Android, привязка домена, SSL и запись на NFC-носитель.
+      </p>
+
+      <div class="facts-grid">
+        <div class="fact-box">
+          <span class="fact-label">Хостинг и SSL</span>
+          <span class="fact-value">Без ежемесячной аренды</span>
+        </div>
+        <div class="fact-box">
+          <span class="fact-label">Адаптив</span>
+          <span class="fact-value">Mobile-first под Safari и Chrome</span>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn--secondary" data-open-sheet>Заказать расчёт</button>
+    </section>
+
+    <!-- ======================================================
+         КАРТОЧКА 3: ДО / ПОСЛЕ + ТАБЫ УСЛУГ
+         ====================================================== -->
+    <section class="card" id="services" aria-labelledby="spec-title">
+      <div class="eyebrow-pill">
+        <span class="accent-dot" aria-hidden="true"></span>
+        <span>Услуги</span>
+      </div>
+
+      <h2 class="gradient-title gradient-title--section" id="spec-title">
+        От бумажных визиток —<br />к цифровому контакту
+      </h2>
+
+      <p class="section-lead">
+        Один раз подносите карту к смартфону клиента — открывается ваша персональная страница, портфолио и кнопка сохранения номера.
+      </p>
+
+      <!-- Интерактивная схема До / После -->
+      <div class="compare-box" id="compareBox" data-state="after">
+        <div class="compare-top">
+          <span class="compare-label">Эффект при знакомстве</span>
+          <div class="compare-switch" role="tablist" aria-label="Сравнение До и После">
+            <button type="button" class="switch-btn" data-compare="before" role="tab" aria-selected="false">До</button>
+            <button type="button" class="switch-btn active" data-compare="after" role="tab" aria-selected="true">После</button>
+          </div>
+        </div>
+
+        <div class="balance-viz" aria-hidden="true">
+          <div class="viz-bar"></div>
+          <div class="viz-bar"></div>
+          <div class="viz-bar"></div>
+          <div class="viz-bar"></div>
+          <div class="viz-bar"></div>
+        </div>
+
+        <div class="compare-caption">
+          <span class="compare-status" id="compareStatus">Контакт сохранён и заявка в мессенджере</span>
+        </div>
+        <p class="compare-hint" id="compareHint">
+          Мгновенное открытие страницы без установки приложений, сохранение vCard в 1 тап и переход в Telegram или WhatsApp.
+        </p>
+      </div>
+
+      <!-- Переключаемые табы услуг -->
+      <div class="tabs-row" role="tablist" aria-label="Направления разработки">
+        <button type="button" class="tab-btn active" data-tab="nfc" role="tab" aria-selected="true">NFC-визитки</button>
+        <button type="button" class="tab-btn" data-tab="clinics" role="tab" aria-selected="false">Врачам и клиникам</button>
+        <button type="button" class="tab-btn" data-tab="landing" role="tab" aria-selected="false">Сайты бизнеса</button>
+      </div>
+
+      <div class="tab-panel" id="tabPanel" role="tabpanel">
+        <h3 id="tabTitle">Персональная NFC-визитка под ключ</h3>
+        <p id="tabDesc">
+          Разработка индивидуальной мобильной страницы, генерация файла контакта (.vcf), настройка превью для мессенджеров и прошивка физической NFC-карты.
+        </p>
+      </div>
+
+      <div class="chips-grid">
+        <div class="method-chip"><span class="chip-glyph" aria-hidden="true">◖</span><span>Дизайн и вёрстка</span></div>
+        <div class="method-chip"><span class="chip-glyph" aria-hidden="true">≈</span><span>Запись на NFC-чип</span></div>
+        <div class="method-chip"><span class="chip-glyph" aria-hidden="true">⌘</span><span>Домен и HTTPS</span></div>
+        <div class="method-chip"><span class="chip-glyph" aria-hidden="true">✦</span><span>vCard в 1 клик</span></div>
+      </div>
+
+      <button type="button" class="btn btn--primary" data-open-sheet>Обсудить задачу</button>
+    </section>
+
+    <!-- ======================================================
+         КАРТОЧКА 4: РЕАЛИЗОВАННЫЕ КЕЙСЫ
+         ====================================================== -->
+    <section class="card" id="cases" aria-labelledby="cases-title">
+      <div class="eyebrow-pill">
+        <span class="accent-dot" aria-hidden="true"></span>
+        <span>Портфолио</span>
+      </div>
+
+      <h2 class="gradient-title gradient-title--section" id="cases-title">
+        Живые кейсы
+      </h2>
+
+      <p class="section-lead">
+        Примеры страниц, которые уже работают на смартфонах клиентов и записаны на NFC-носители.
+      </p>
+
+      <div class="cases-stack">
+        <a href="https://imdoctor77.github.io/" target="_blank" rel="noopener noreferrer" class="case-card">
+          <div class="case-top">
+            <span class="case-tag">NFC-визитка · Медицина</span>
+            <span class="case-link-arrow">Открыть ↗</span>
+          </div>
+          <div class="case-title">Визитка врача-эндокринолога (г. Москва)</div>
+          <p class="case-desc">
+            Модульный мобильный интерфейс с интерактивной схемой «До / После», табами специализаций, шторкой записи и сохранением контакта vCard.
+          </p>
+        </a>
+
+        <a href="https://ritual-armavir.ru/" target="_blank" rel="noopener noreferrer" class="case-card">
+          <div class="case-top">
+            <span class="case-tag">Сайт под ключ · Услуги</span>
+            <span class="case-link-arrow">Открыть ↗</span>
+          </div>
+          <div class="case-title">Многостраничный сайт сервиса в Армавире</div>
+          <p class="case-desc">
+            Строгий архитектурный дизайн, быстрая загрузка на мобильных устройствах, настройка домена, DNS и SSL-сертификата.
+          </p>
+        </a>
+
+        <div class="case-card">
+          <div class="case-top">
+            <span class="case-tag">В разработке · Бизнес</span>
+            <span class="case-link-arrow" style="color: var(--text-muted);">Демо по запросу</span>
+          </div>
+          <div class="case-title">Лендинги для стоматологий, студий и локального бизнеса</div>
+          <p class="case-desc">
+            Собираю индивидуальное демо первого экрана под ваш проект до оплаты — напишите в Telegram, чтобы посмотреть релевантный макет.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================
+         КАРТОЧКА 5: ЧАСТЫЕ ВОПРОСЫ
+         ====================================================== -->
+    <section class="card" id="faq" aria-labelledby="faq-title">
+      <div class="eyebrow-pill">
+        <span class="accent-dot" aria-hidden="true"></span>
+        <span>Вопросы</span>
+      </div>
+
+      <h2 class="gradient-title gradient-title--section" id="faq-title">
+        Как проходит запуск
+      </h2>
+
+      <div class="faq-stack">
+        <div class="faq-item">
+          <button type="button" class="faq-btn" aria-expanded="false">
+            <span class="faq-q">Работает ли NFC-визитка на всех телефонах?</span>
+            <span class="faq-plus" aria-hidden="true"></span>
+          </button>
+          <div class="faq-panel">
+            <div class="faq-inner">
+              <p class="faq-body">
+                Да. Все современные iPhone (начиная с iPhone XS / XR и новее) и Android-смартфоны считывают карту в фоновом режиме без установки сторонних приложений — достаточно поднести карту к верхней части телефона.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button type="button" class="faq-btn" aria-expanded="false">
+            <span class="faq-q">Нужно ли платить ежемесячную подписку за хостинг?</span>
+            <span class="faq-plus" aria-hidden="true"></span>
+          </button>
+          <div class="faq-panel">
+            <div class="faq-inner">
+              <p class="faq-body">
+                Нет. Страница размещается на надёжном облачном хостинге с бесплатным HTTPS-сертификатом без ежемесячной абонентской платы. При желании подключается ваш собственный домен в зоне .ru или .com.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button type="button" class="faq-btn" aria-expanded="false">
+            <span class="faq-q">Можно ли потом поменять номер телефона или фото?</span>
+            <span class="faq-plus" aria-hidden="true"></span>
+          </button>
+          <div class="faq-panel">
+            <div class="faq-inner">
+              <p class="faq-body">
+                Да, перезаписывать саму физическую карту не придётся. Мы обновляем данные на странице и в файле контакта по той же ссылке — при следующем касании клиенты сразу увидят актуальную информацию.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button type="button" class="faq-btn" aria-expanded="false">
+            <span class="faq-q">Что нужно от меня для старта?</span>
+            <span class="faq-plus" aria-hidden="true"></span>
+          </button>
+          <div class="faq-panel">
+            <div class="faq-inner">
+              <p class="faq-body">
+                Достаточно написать в Telegram: прислать имя/название компании, контакты для кнопок, 1–2 фото и кратко описать ваши услуги. Первый рабочий прототип соберу за 1–2 дня.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================
+         КАРТОЧКА 6: КОНТАКТЫ
+         ====================================================== -->
+    <section class="card" id="contacts" aria-labelledby="contacts-title">
+      <div class="eyebrow-pill">
+        <span class="accent-dot" aria-hidden="true"></span>
+        <span>Контакты</span>
+      </div>
+
+      <h2 class="gradient-title gradient-title--section" id="contacts-title">
+        На связи
+      </h2>
+
+      <p class="section-lead">
+        Напишите в мессенджер — обсудим задачу и соберу демо под ваш проект.
+      </p>
+
+      <div class="contact-rows">
+        <div class="contact-row static">
+          <span class="contact-glyph" aria-hidden="true">⌖</span>
+          <div class="contact-text">
+            <span class="contact-kicker">Локация</span>
+            <span class="contact-val">Краснодар · Работаю по всей РФ</span>
+          </div>
+        </div>
+
+        <div class="contact-row static">
+          <span class="contact-glyph" aria-hidden="true">◷</span>
+          <div class="contact-text">
+            <span class="contact-kicker">Скорость ответа</span>
+            <span class="contact-val">В течение 15–30 минут</span>
+          </div>
+        </div>
+
+                <button type="button" class="contact-row" id="copyPhoneBtn">
+          <span class="contact-glyph" aria-hidden="true">☎</span>
+          <div class="contact-text">
+            <span class="contact-kicker">Телефон</span>
+            <span class="contact-val">+7 (918) 022-32-00</span>
+          </div>
+          <span class="contact-action">Копировать</span>
+        </button>
+      </div>
+
+      <div class="btn-stack">
+        <a href="https://t.me/+79180223200" target="_blank" rel="noopener noreferrer" class="btn btn--primary">Написать в Telegram</a>
+        <a href="https://wa.me/79180223200" target="_blank" rel="noopener noreferrer" class="btn btn--secondary">Написать в WhatsApp</a>
+        <a href="contact.vcf" class="btn btn--secondary">Сохранить контакт (.vcf)</a>
+      </div>
+    </section>
+
+    <footer class="footer-note">
+      <div class="footer-name">Петросян Артур · Веб-разработка и NFC-визитки</div>
+      <p class="footer-disclaimer">
+        Сайты, лендинги и цифровые NFC-карты под ключ для специалистов и бизнеса.
+      </p>
+    </footer>
+  </main>
+
+  <!-- Шторка «Обсудить проект» -->
+  <div class="sheet-backdrop" id="contactSheet" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <span class="sheet-title" id="sheetTitle">Связаться со мной</span>
+        <button type="button" class="sheet-close" id="closeSheetBtn">Закрыть</button>
+      </div>
+      <div class="btn-stack">
+        <a href="https://t.me/+79180223200" target="_blank" rel="noopener noreferrer" class="btn btn--primary">Написать в Telegram</a>
+        <a href="https://wa.me/79180223200" target="_blank" rel="noopener noreferrer" class="btn btn--secondary">Написать в WhatsApp</a>
+        <a href="tel:+79180223200" class="btn btn--secondary">Позвонить +7 (918) 022-32-00</a>
+        <button type="button" class="btn btn--secondary" id="copyPhoneSheetBtn">Скопировать номер</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast уведомление -->
+  <div class="toast" id="toast" role="status" aria-live="polite">Номер скопирован</div>
+
+  <script>
+    (function () {
+      const PHONE_RAW = "+79180223200";
+      const PHONE_DISPLAY = "+7 (918) 022-32-00";
+      const toastEl = document.getElementById("toast");
+      let toastTimer;
+
+      function showToast(text) {
+        toastEl.textContent = text;
+        toastEl.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+      }
+
+      async function copyPhone() {
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(PHONE_RAW);
+          } else {
+            const ta = document.createElement("textarea");
+            ta.value = PHONE_RAW;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+          }
+          showToast("Номер скопирован");
+        } catch {
+          showToast(PHONE_DISPLAY);
+        }
+      }
+
+      ["copyPhoneBtn", "copyPhoneSheetBtn"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("click", copyPhone);
+      });
+
+      /* Живая печатная строка в карточке «Подход» */
+      const twTarget = document.getElementById("typewriterText");
+      const phrases = [
+        "Контакт в телефон за 1 касание",
+        "Быстрая загрузка на iPhone и Android",
+        "Сайт без ежемесячной подписки",
+        "Готовый прототип за 1–2 дня"
+      ];
+      let pIdx = 0;
+      let cIdx = phrases[0].length;
+      let deleting = false;
+
+      if (twTarget && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setTimeout(function tick() {
+          const current = phrases[pIdx];
+          if (!deleting) {
+            cIdx++;
+            twTarget.textContent = current.slice(0, cIdx);
+            if (cIdx === current.length) {
+              deleting = true;
+              setTimeout(tick, 2200);
+              return;
+            }
+            setTimeout(tick, 55);
+          } else {
+            cIdx--;
+            twTarget.textContent = current.slice(0, cIdx);
+            if (cIdx === 0) {
+              deleting = false;
+              pIdx = (pIdx + 1) % phrases.length;
+              setTimeout(tick, 320);
+              return;
+            }
+            setTimeout(tick, 30);
+          }
+        }, 2000);
+      }
+
+      /* Переключатель До / После */
+      const compareBox = document.getElementById("compareBox");
+      const compareStatus = document.getElementById("compareStatus");
+      const compareHint = document.getElementById("compareHint");
+      const compareCopy = {
+        before: {
+          status: "Бумажные визитки и потерянные контакты",
+          hint: "Карточка остаётся в кармане или теряется, а клиенту лень вручную перебивать номер и искать соцсети."
+        },
+        after: {
+          status: "Контакт сохранён и заявка в мессенджере",
+          hint: "Мгновенное открытие страницы без установки приложений, сохранение vCard в 1 тап и переход в Telegram или WhatsApp."
+        }
+      };
+
+      document.querySelectorAll("[data-compare]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const mode = btn.dataset.compare;
+          compareBox.setAttribute("data-state", mode);
+          document.querySelectorAll("[data-compare]").forEach((b) => {
+            const active = b === btn;
+            b.classList.toggle("active", active);
+            b.setAttribute("aria-selected", String(active));
+          });
+          if (compareCopy[mode]) {
+            compareStatus.textContent = compareCopy[mode].status;
+            compareHint.textContent = compareCopy[mode].hint;
+          }
+        });
+      });
+
+      /* Табы услуг */
+      const tabData = {
+        nfc: {
+          title: "Персональная NFC-визитка под ключ",
+          desc: "Разработка индивидуальной мобильной страницы, генерация файла контакта (.vcf), настройка превью для мессенджеров и прошивка физической NFC-карты."
+        },
+        clinics: {
+          title: "Решения для врачей и медицинских клиник",
+          desc: "Упаковка личного бренда врача: аккредитация, направления приёма, интерактивные блоки для пациентов и быстрая запись в мессенджер."
+        },
+        landing: {
+          title: "Мобильные лендинги и сайты для бизнеса",
+          desc: "Одностраничные и многостраничные сайты без лишнего визуального шума с акцентом на заявки, скорость работы и подключение домена."
+        }
+      };
+
+      const tabTitle = document.getElementById("tabTitle");
+      const tabDesc = document.getElementById("tabDesc");
+
+      document.querySelectorAll("[data-tab]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.tab;
+          document.querySelectorAll("[data-tab]").forEach((b) => {
+            const active = b === btn;
+            b.classList.toggle("active", active);
+            b.setAttribute("aria-selected", String(active));
+          });
+          if (tabData[key]) {
+            tabTitle.textContent = tabData[key].title;
+            tabDesc.textContent = tabData[key].desc;
+          }
+        });
+      });
+
+      /* FAQ аккордеон */
+      document.querySelectorAll(".faq-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const item = btn.closest(".faq-item");
+          const isOpen = item.classList.toggle("open");
+          btn.setAttribute("aria-expanded", String(isOpen));
+        });
+      });
+
+      /* Шторка связи */
+      const sheet = document.getElementById("contactSheet");
+      const openSheet = () => {
+        sheet.classList.add("open");
+        sheet.setAttribute("aria-hidden", "false");
+      };
+      const closeSheet = () => {
+        sheet.classList.remove("open");
+        sheet.setAttribute("aria-hidden", "true");
+      };
+
+      const openHeroBtn = document.getElementById("openSheetHeroBtn");
+      if (openHeroBtn) openHeroBtn.addEventListener("click", openSheet);
+      document.querySelectorAll("[data-open-sheet]").forEach((b) => {
+        b.addEventListener("click", openSheet);
+      });
+      document.getElementById("closeSheetBtn").addEventListener("click", closeSheet);
+      sheet.addEventListener("click", (e) => {
+        if (e.target === sheet) closeSheet();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && sheet.classList.contains("open")) closeSheet();
+      });
+    })();
+  </script>
+</body>
+</html>
